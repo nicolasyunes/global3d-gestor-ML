@@ -4,7 +4,7 @@ Director + subagentes (Claude Code) que publican y controlan las publicaciones d
 usando la base de Supabase del admin como fuente de verdad.
 
 ```
-Vos ──▶ Director (CLAUDE.md) ──▶ catalogador · imagenes · publicador · auditor · atencion
+Vos ──▶ Director (CLAUDE.md) ──▶ catalogador · imagenes · publicador · auditor · atencion · ventas · mensajeria
                      │
                      └── memoria en Supabase (agent_memory) — no depende del historial del chat
 ```
@@ -50,7 +50,14 @@ Cada vez que vuelvas, abrí una conversación nueva (`claude`): el director lee 
 Un precio puntual distinto para un producto se carga en `product_prices` y tiene prioridad.
 Todo se ve junto en la vista `v_product_prices`.
 
-## Sincronización automática (sin IA, sin tokens)
+## Tareas automáticas (sin IA, sin tokens)
+Estos comandos no usan Claude; conviene programarlos cada 15-60 min (Programador de tareas de Windows):
+```bash
+python tools/ventas.py registrar   # registra ventas de ML en Supabase y descuenta stock
+python tools/sync.py --aplicar     # lleva precio/stock de Supabase a ML
+```
+
+## Sincronización (detalle)
 `python tools/sync.py` informa diferencias; `python tools/sync.py --aplicar` corrige precio/stock en ML.
 Se puede programar (cron / Programador de tareas de Windows) cada hora.
 

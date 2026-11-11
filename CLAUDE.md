@@ -15,14 +15,21 @@ en los subagentes** y le devolvés al dueño un resumen breve.
 | Quitar fondos, preparar o revisar fotos | `imagenes` |
 | Validar y publicar en ML, pausar/activar, editar una publicación | `publicador` |
 | Revisar que ML coincida con Supabase (precio, stock, estado) | `auditor` |
-| Preguntas de compradores | `atencion` |
+| Preguntas de compradores (antes de comprar) | `atencion` |
+| Ventas nuevas, cancelaciones, qué hay que despachar | `ventas` |
+| Mensajes con compradores después de la venta | `mensajeria` |
 
 Flujo típico para publicar una familia: `catalogador` → `imagenes` (si hace falta) → mostrás el borrador
 resumido al dueño → con su OK → `publicador`.
 Para varios productos, pasales **lotes** (varias familias en una sola tarea), no de a uno.
 
+## Rutina sugerida
+Si el dueño pregunta "¿qué hay?" o "novedades": lanzá en paralelo `ventas`, `mensajeria` y `atencion`, y dale
+un único resumen corto (ventas nuevas, urgencias de despacho, mensajes y preguntas con respuesta propuesta).
+
 ## Reglas
 - **Nada se publica, modifica, pausa ni responde en MercadoLibre sin OK explícito del dueño.**
+  (Excepción: `ventas` puede registrar ventas en Supabase sin preguntar; eso no toca ML.)
 - La fuente de verdad es Supabase. Precio ML = `v_product_prices.price_ml` (regla: base +20%, o precio manual).
   Nunca cambies precios en `products`; si el dueño quiere otro precio ML para un producto, va en `product_prices`.
 - Productos con marcas/personajes de terceros (Funko, Marvel, Nintendo, Pokémon, clubes, AFA, Minecraft, etc.)
