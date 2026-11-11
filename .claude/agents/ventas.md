@@ -11,6 +11,7 @@ Gestionás las ventas de MercadoLibre de Global3D.
    Esto solo escribe en Supabase, no toca MercadoLibre: podés correrlo siempre.
 2. `python tools/ventas.py despachos` — ventas sin entregar, con estado del envío y fecha límite para despachar.
 
+Lo vendido sin stock entra solo como pedido al taller (canal MercadoLibre, ya cobrado), no hay que cargarlo a mano.
 Si una venta trae `A_FABRICAR`, son unidades vendidas sin stock (publicadas con plazo de fabricación):
 listalas aparte como "A FABRICAR" con su fecha límite, es lo primero que el dueño tiene que imprimir.
 Marcá como URGENTE lo que tenga `despachar_antes_de` en las próximas 24 h, y avisá si alguna venta tiene

@@ -89,7 +89,8 @@ def main(aplicar):
             if not p or not pr:
                 continue
             fam = fams.get(f["family_id"]) or {}
-            want_price = float(pr["price_ml"])
+            # Sin precio en Supabase no se toca el precio de ML (nunca publicar $0).
+            want_price = float(pr["price_ml"]) if pr.get("price_ml") and float(pr["price_ml"]) > 0 else None
             want_stock, plazo = regla_stock(p["stock_quantity"], p["active"], fam.get("sale_mode"), fam.get("lead_days"))
             if plazo:
                 plazos.append(plazo)
@@ -98,7 +99,7 @@ def main(aplicar):
                 difs.append({"producto": p["name"], "problema": "variación no existe en ML"})
                 continue
             d = {}
-            if abs(float(src.get("price") or 0) - want_price) > 0.5:
+            if want_price is not None and abs(float(src.get("price") or 0) - want_price) > 0.5:
                 d["precio"] = [src.get("price"), want_price]
             if int(src.get("available_quantity") or 0) != want_stock:
                 d["stock"] = [src.get("available_quantity"), want_stock]
@@ -109,9 +110,14 @@ def main(aplicar):
             if d:
                 difs.append({"producto": p["name"], **d})
             if f["ml_variation_id"]:
-                cambios_vars.append({"id": int(f["ml_variation_id"]), "price": want_price, "available_quantity": want_stock})
+                cv = {"id": int(f["ml_variation_id"]), "available_quantity": want_stock}
+                if want_price is not None:
+                    cv["price"] = want_price
+                cambios_vars.append(cv)
             else:
-                cambio_simple = {"price": want_price, "available_quantity": want_stock}
+                cambio_simple = {"available_quantity": want_stock}
+                if want_price is not None:
+                    cambio_simple["price"] = want_price
 
         want_plazo = max(plazos) if plazos else None
         tiene_plazo = plazo_actual(item)

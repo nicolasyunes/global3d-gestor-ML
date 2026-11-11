@@ -59,6 +59,17 @@ def armar_payload(o, mapa, fams):
             "items": items}
 
 
+def limite_despacho(shipping_id):
+    """Fecha límite para despachar (se usa como fecha de entrega del pedido del taller)."""
+    if not shipping_id:
+        return None
+    s, d = ml("GET", f"/shipments/{shipping_id}")
+    if s != 200:
+        return None
+    return (((d.get("shipping_option") or {}).get("estimated_handling_limit") or {}).get("date")
+            or ((d.get("lead_time") or {}).get("estimated_handling_limit") or {}).get("date"))
+
+
 def ya_registradas():
     return {r["ml_order_id"]: r for r in sb("GET", "ml_orders", {"select": "ml_order_id,voided"})}
 
@@ -79,6 +90,7 @@ def nuevas(dias, registrar=False):
         if st != "paid" or o["id"] in reg:
             continue
         p = armar_payload(o, mapa, fams)
+        p["handling_limit"] = limite_despacho(p.get("shipping_id")) if registrar else None
         resumen["nuevas"] += 1
         sin = [i["description"] for i in p["items"] if not i["product_id"]]
         if sin:
