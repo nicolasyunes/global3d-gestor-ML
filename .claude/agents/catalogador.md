@@ -33,8 +33,14 @@ Para cada familia que te pidan:
 ```
    - Familia con 1 variante: sin `variations`; usá `price` y `available_quantity` del producto.
    - Con varias: una entrada en `variations` por producto (en el mismo orden que `_meta.variantes`); sacá `price`/`available_quantity` del nivel raíz.
-   - Precio = `precio_ml` de la variante. Stock = `stock`; si `modo_venta` es `a_pedido`, stock 5 y `MANUFACTURING_TIME` con `dias_fabricacion`.
-   - `sale_terms` solo si es a pedido.
+   - Precio = `precio_ml` de la variante.
+   - Stock por variante (misma regla que `tools/sync.py`):
+     * `modo_venta` = `a_pedido` → stock 3.
+     * stock > 0 → el stock real.
+     * stock 0 y `dias_fabricacion` > 0 → stock 3 (se fabrica a pedido).
+     * stock 0 y sin `dias_fabricacion` → no publicar esa variante (avisalo en `nota`).
+   - `sale_terms` con `MANUFACTURING_TIME` = "<dias_fabricacion> días" solo si alguna variante usa stock de fabricación
+     (o es a pedido); si todas tienen stock real, sin `sale_terms`.
 7. `python tools/ml.py validar work/borradores/<slug>.json` y corregí hasta que dé `{"ok":true}`.
 
 Si el producto usa marcas, personajes, clubes o licencias de terceros, NO lo descartes, pero marcá `"_riesgo_marca": true`.

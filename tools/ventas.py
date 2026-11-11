@@ -83,13 +83,32 @@ def nuevas(dias, registrar=False):
         sin = [i["description"] for i in p["items"] if not i["product_id"]]
         if sin:
             resumen["sin_vincular"] += 1
+        fabricar = None
         if registrar:
             sb("POST", "rpc/ml_register_sale", body={"p": p})
             resumen["registradas"] += 1
+            fabricar = a_fabricar(o["id"])
+            if fabricar:
+                resumen["a_fabricar"] = resumen.get("a_fabricar", 0) + 1
         out({"orden": o["id"], "fecha": p["sold_at"], "comprador": p["buyer_nickname"], "total": p["total"],
              "items": [f'{i["quantity"]}x {i["description"]}' for i in p["items"]],
-             "sin_vincular": sin or None})
+             "A_FABRICAR": fabricar, "sin_vincular": sin or None})
     out(resumen)
+
+
+def a_fabricar_items(items):
+    """Unidades vendidas que no salieron del stock (hay que imprimirlas)."""
+    res = []
+    for i in items or []:
+        falta = int(i.get("quantity") or 0) - int(i.get("stock_descontado") or 0)
+        if falta > 0:
+            res.append(f'{falta}x {i.get("description")}')
+    return res or None
+
+
+def a_fabricar(order_id):
+    r = sb("GET", "ml_orders", {"ml_order_id": f"eq.{order_id}", "select": "items"})
+    return a_fabricar_items(r[0]["items"]) if r else None
 
 
 def despachos():
@@ -109,6 +128,7 @@ def despachos():
             continue
         out({"orden": r["ml_order_id"], "comprador": r["buyer_nickname"], "envio": d.get("status"),
              "subestado": d.get("substatus"), "despachar_antes_de": limite,
+             "A_FABRICAR": a_fabricar_items(r["items"]),
              "items": [f'{i["quantity"]}x {i["description"]}' for i in r["items"] or []]})
 
 
