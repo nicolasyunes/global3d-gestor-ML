@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python tools/db.py:*)",
+      "Bash(python tools/imagenes.py:*)",
+      "Bash(python tools/ml.py yo)",
+      "Bash(python tools/ml.py categoria:*)",
+      "Bash(python tools/ml.py atributos:*)",
+      "Bash(python tools/ml.py validar:*)",
+      "Bash(python tools/ml.py item:*)",
+      "Bash(python tools/ml.py mis-items:*)",
+      "Bash(python tools/ml.py preguntas)",
+      "Bash(python tools/sync.py)"
+    ]
+  }
+}
