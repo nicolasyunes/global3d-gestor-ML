@@ -20,13 +20,17 @@ UUID = re.compile(r"^[0-9a-f-]{36}$")
 
 
 def pendientes():
+    """Familias publicadas en la web con al menos un producto sin publicación en ML (1 publicación por producto)."""
     fams = sb("GET", "shop_families", {"select": "id,slug,name,category,sale_mode,published,shop_family_products(product_id)",
                                        "published": "eq.true", "order": "position"})
-    ya = {l["family_id"] for l in sb("GET", "ml_listings", {"select": "family_id"}) if l["family_id"]}
+    ya = {l["product_id"] for l in sb("GET", "ml_listings", {"select": "product_id", "status": "neq.closed"})
+          if l["product_id"]}
     for f in fams:
-        if f["id"] not in ya:
+        prods = [x["product_id"] for x in f["shop_family_products"]]
+        faltan = [p for p in prods if p not in ya]
+        if faltan:
             out({"id": f["id"], "slug": f["slug"], "nombre": f["name"], "cat": f["category"],
-                 "modo": f["sale_mode"], "variantes": len(f["shop_family_products"])})
+                 "modo": f["sale_mode"], "productos": len(prods), "sin_publicar": len(faltan)})
 
 
 def familia(ref):

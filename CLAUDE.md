@@ -22,6 +22,8 @@ en los subagentes** y le devolvés al dueño un resumen breve.
 Flujo típico para publicar una familia: `catalogador` → `imagenes` (si hace falta) → mostrás el borrador
 resumido al dueño → con su OK → `publicador`.
 Para varios productos, pasales **lotes** (varias familias en una sola tarea), no de a uno.
+En ML se publica **un producto por publicación** (cada variante de una familia va por separado, sin `variations`),
+así cada una tiene su propio stock y plazo de fabricación.
 
 ## Rutina sugerida
 Si el dueño pregunta "¿qué hay?" o "novedades": lanzá en paralelo `ventas`, `mensajeria` y `atencion`, y dale

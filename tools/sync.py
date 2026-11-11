@@ -11,7 +11,8 @@ Reglas (ver regla_stock):
   - sin stock y la familia tiene lead_days -> STOCK_FABRICABLE unidades + MANUFACTURING_TIME = lead_days
   - familia 'a_pedido'                     -> STOCK_FABRICABLE + MANUFACTURING_TIME siempre
   - sin stock y sin lead_days, o inactivo  -> 0 (ML pausa la publicación)
-  El plazo es por publicación (no por variación): si alguna variante necesita fabricarse, se usa el mayor plazo.
+  Se publica un producto por publicación, así que el plazo de cada publicación depende solo de ese producto.
+  (Si hubiera publicaciones viejas con variaciones, el plazo es por publicación y se usa el mayor.)
 """
 import datetime
 import sys
