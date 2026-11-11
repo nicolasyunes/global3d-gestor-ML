@@ -18,7 +18,7 @@ import datetime
 import sys
 from collections import defaultdict
 
-from common import ml, out, sb
+from common import ml, out, registrar_corrida, sb
 
 STOCK_FABRICABLE = 3
 
@@ -56,6 +56,8 @@ def main(aplicar):
                                      "product_id": "not.is.null", "status": "neq.closed"})
     if not rows:
         out({"info": "No hay publicaciones vinculadas en ml_listings"})
+        if aplicar:
+            registrar_corrida("sync", {"revisados": 0, "con_diferencias": 0, "corregidos": 0, "errores": 0})
         return
     pids = sorted({r["product_id"] for r in rows})
     precios = {p["product_id"]: p for p in sb("GET", "v_product_prices", {"product_id": f"in.({','.join(pids)})"})}
@@ -70,12 +72,13 @@ def main(aplicar):
     for r in rows:
         por_item[r["ml_item_id"]].append(r)
 
-    resumen = {"revisados": 0, "con_diferencias": 0, "corregidos": 0}
+    resumen = {"revisados": 0, "con_diferencias": 0, "corregidos": 0, "errores": 0}
     ahora = datetime.datetime.now(datetime.timezone.utc).isoformat()
     for item_id, filas in por_item.items():
         s, item = ml("GET", f"/items/{item_id}")
         if s != 200:
             out({"item": item_id, "error": s})
+            resumen["errores"] += 1
             continue
         resumen["revisados"] += 1
         vars_ml = {str(v["id"]): v for v in item.get("variations") or []}
@@ -132,7 +135,10 @@ def main(aplicar):
                         sb("PATCH", "ml_listings", {"id": f"eq.{f['id']}"}, {"needs_review": False})
                 else:
                     out({"item": item_id, "error_al_corregir": d2})
+                    resumen["errores"] += 1
     out(resumen)
+    if aplicar:
+        registrar_corrida("sync", resumen, ok=resumen["errores"] == 0)
 
 
 if __name__ == "__main__":

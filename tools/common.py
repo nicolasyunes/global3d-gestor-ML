@@ -67,6 +67,14 @@ def ml(method, path, params=None, body=None, files=None, auth=True):
     return r.status_code, data
 
 
+def registrar_corrida(tarea, resumen, ok=True):
+    """Deja constancia en ml_task_runs (lo muestra el admin en la sección MercadoLibre)."""
+    try:
+        sb("POST", "ml_task_runs", body={"task": tarea, "ok": ok, "summary": resumen})
+    except SystemExit:
+        pass  # no frenar la tarea por no poder registrar la corrida
+
+
 def out(obj):
     """Salida compacta (JSON en una línea por objeto) para no gastar tokens."""
     print(json.dumps(obj, ensure_ascii=False, separators=(",", ":"), default=str))

@@ -11,7 +11,7 @@ Uso:
 import datetime
 import sys
 
-from common import ml, ml_token, out, sb
+from common import ml, ml_token, out, registrar_corrida, sb
 
 
 def dias_arg(a, default=7):
@@ -94,6 +94,8 @@ def nuevas(dias, registrar=False):
              "items": [f'{i["quantity"]}x {i["description"]}' for i in p["items"]],
              "A_FABRICAR": fabricar, "sin_vincular": sin or None})
     out(resumen)
+    if registrar:
+        registrar_corrida("ventas", resumen, ok=True)
 
 
 def a_fabricar_items(items):
