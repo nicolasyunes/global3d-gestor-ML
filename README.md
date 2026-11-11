@@ -25,7 +25,7 @@ Vos ──▶ Director (CLAUDE.md) ──▶ catalogador · imagenes · publicad
    git clone https://github.com/nicolasyunes/global3d-gestor-ML.git && cd global3d-gestor-ML
    python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
    pip install -r requirements.txt
-   cp .env.example .env    # pegá la service_role key de Supabase
+   cp .env.example .env    # pegá la Secret key (sb_secret_...) de Supabase
    python tools/ml.py yo   # debe mostrar tu usuario de ML
    claude                  # abre el director
    ```

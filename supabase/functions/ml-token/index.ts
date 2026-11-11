@@ -6,10 +6,25 @@ const TOKEN_URL = "https://api.mercadolibre.com/oauth/token";
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
+// Acepta la service_role legacy o una secret key nueva (sb_secret_...).
+// Una secret key se valida leyendo ml_auth por la Data API: esa tabla tiene RLS sin políticas,
+// así que solo una clave con privilegios de servicio obtiene la fila.
+async function claveValida(key: string, url: string, serviceKey: string): Promise<boolean> {
+  if (!key) return false;
+  if (key === serviceKey) return true;
+  if (!key.startsWith("sb_secret_")) return false;
+  const r = await fetch(`${url}/rest/v1/ml_auth?select=id`, { headers: { apikey: key } });
+  if (!r.ok) return false;
+  const rows = await r.json();
+  return Array.isArray(rows) && rows.length > 0;
+}
+
 Deno.serve(async (req) => {
   const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const auth = req.headers.get("authorization") ?? "";
-  if (auth !== `Bearer ${SERVICE_KEY}`) return json({ error: "unauthorized" }, 401);
+  const URL_SB = Deno.env.get("SUPABASE_URL")!;
+  const bearer = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
+  const key = req.headers.get("apikey") || bearer;
+  if (!(await claveValida(key, URL_SB, SERVICE_KEY))) return json({ error: "unauthorized" }, 401);
 
   const sb = createClient(Deno.env.get("SUPABASE_URL")!, SERVICE_KEY);
   const { data: row, error } = await sb.from("ml_auth").select("*").eq("id", 1).maybeSingle();

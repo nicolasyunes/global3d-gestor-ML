@@ -16,11 +16,10 @@ SITE = "MLA"
 if not SUPABASE_URL or not SERVICE_KEY:
     sys.exit("Falta SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env")
 
-_SB_HEADERS = {
-    "apikey": SERVICE_KEY,
-    "Authorization": f"Bearer {SERVICE_KEY}",
-    "Content-Type": "application/json",
-}
+# Claves nuevas (sb_secret_...) van solo en "apikey"; la service_role legacy (JWT) también en Authorization.
+_SB_HEADERS = {"apikey": SERVICE_KEY, "Content-Type": "application/json"}
+if not SERVICE_KEY.startswith("sb_"):
+    _SB_HEADERS["Authorization"] = f"Bearer {SERVICE_KEY}"
 
 
 def sb(method, path, params=None, body=None, prefer=None):
@@ -43,7 +42,7 @@ def ml_token(force=False):
     if _token_cache and not force:
         return _token_cache
     r = requests.post(f"{SUPABASE_URL}/functions/v1/ml-token" + ("?force=1" if force else ""),
-                      headers={"Authorization": f"Bearer {SERVICE_KEY}"}, timeout=30)
+                      headers=_SB_HEADERS, timeout=30)
     data = r.json()
     if r.status_code != 200:
         sys.exit(f"No se pudo obtener token de ML: {data}")
