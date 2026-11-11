@@ -38,6 +38,8 @@ Deno.serve(async (req) => {
     target.searchParams.set("client_id", CLIENT_ID);
     target.searchParams.set("redirect_uri", REDIRECT_URI);
     target.searchParams.set("state", state);
+    // Sin offline_access ML no entrega refresh_token (el acceso duraría solo 6 h)
+    target.searchParams.set("scope", "offline_access read write");
     return new Response(null, {
       status: 302,
       headers: {
@@ -77,7 +79,10 @@ Deno.serve(async (req) => {
   });
   if (error) return text(`Error guardando tokens: ${error.message}`, 500);
 
-  return text(`Cuenta de MercadoLibre vinculada (user_id ${data.user_id}). Ya podés cerrar esta pestaña.`, 200, {
+  const renovable = data.refresh_token
+    ? "Renovación automática: SÍ (refresh token recibido)."
+    : "Renovación automática: NO (ML no envió refresh token; el acceso dura 6 h).";
+  return text(`Cuenta de MercadoLibre vinculada (user_id ${data.user_id}).\nPermisos: ${data.scope ?? "?"}\n${renovable}\nYa podés cerrar esta pestaña.`, 200, {
     "Set-Cookie": "ml_state=; Max-Age=0; Path=/functions/v1/ml-oauth",
   });
 });
