@@ -4,6 +4,7 @@ Uso:
   python tools/ml.py yo                                   # verifica la cuenta vinculada
   python tools/ml.py categoria "<título tentativo>"       # predice categoría
   python tools/ml.py atributos <CATEGORY_ID> [--todos]    # atributos (por defecto solo obligatorios/importantes)
+  python tools/ml.py similares "<producto>" [--n 10]      # medidas/peso/capacidad/material de productos parecidos en ML
   python tools/ml.py validar <archivo.json>               # valida sin publicar
   python tools/ml.py publicar <archivo.json>              # publica (+ descripción si el JSON trae "_descripcion")
   python tools/ml.py item <MLA...>                        # estado actual de una publicación
@@ -51,6 +52,17 @@ def main(a):
         need_ok(s, d)
         for c in d:
             out({"category_id": c["category_id"], "categoria": c["category_name"], "dominio": c.get("domain_name")})
+    elif cmd == "similares":
+        n = int(a[a.index("--n") + 1]) if "--n" in a else 10
+        s, d = ml("GET", "/products/search", {"site_id": SITE, "q": a[1], "status": "active", "limit": min(n, 50)})
+        need_ok(s, d)
+        claves = ("HEIGHT", "WIDTH", "LENGTH", "DEPTH", "WEIGHT", "DIAMETER", "CAPACITY", "VOLUME", "SIZE",
+                  "MATERIAL", "PIECES", "UNITS", "INCLUDES", "RECOMMENDED_AGE", "FINISH")
+        for r in d.get("results", []):
+            at = {x["id"]: x.get("value_name") for x in r.get("attributes", [])
+                  if x.get("value_name") and any(k in x["id"] for k in claves) and "PACKAGE" not in x["id"]}
+            if at:
+                out({"nombre": r.get("name"), "dominio": r.get("domain_id"), "medidas": at})
     elif cmd == "atributos":
         s, d = ml("GET", f"/categories/{a[1]}/attributes")
         need_ok(s, d)

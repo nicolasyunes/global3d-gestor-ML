@@ -52,7 +52,7 @@ def familia(ref):
         p = x["products"]
         pr = precios.get(p["id"], {})
         variantes.append({
-            "product_id": p["id"], "nombre": p["name"], "opciones": x["option_values"],
+            "product_id": p["id"], "nombre": p["name"], "notas": p["description"], "opciones": x["option_values"],
             "stock": p["stock_quantity"], "activo": p["active"],
             "precio_ml": pr.get("price_ml"), "precio_web": pr.get("price_web"),
             "fotos": [i["url"] for i in sorted(p["product_images"], key=lambda i: i["position"] or 0)],
